@@ -17,13 +17,13 @@ export class User {
   @Column({ length: 80, nullable: true })
   socialName: string;
 
-  @Column({ length: 30 })
+  @Column({ length: 30, unique: true })
   doc: string;
 
-  @Column({ length: 20 })
+  @Column({ length: 20, unique: true })
   whatsapp: string;
 
-  @Column({ length: 30 })
+  @Column()
   password: string;
 
   @Column({ type: 'enum', enum: UserRole, default: UserRole.USER })
