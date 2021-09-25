@@ -13,9 +13,15 @@ export class AppController {
     return this.authService.login(req.user);
   }
 
+  //TODO: Remove this route. It's just to auth implemantation tests
   @UseGuards(JwtAuthGuard)
   @Get('profile')
   getProfile(@Request() req) {
     return req.user;
+  }
+
+  @Get('/')
+  test() {
+    return 'Application is running!';
   }
 }

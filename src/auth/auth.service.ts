@@ -22,7 +22,7 @@ export class AuthService {
 
   async login(user: any) {
     //TODO: Create a interface to user
-    const payload = { whatsapp: user.whatsapp, sub: user.userId };
+    const payload = { whatsapp: user.whatsapp, id: user.id, role: user.role };
     return {
       access_token: this.jwtService.sign(payload),
     };
