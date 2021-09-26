@@ -1,4 +1,4 @@
-import { IsNotEmpty } from 'class-validator';
+import { IsNotEmpty, IsOptional } from 'class-validator';
 import { IsDocAlreadyInUse } from '../validations/users.doc-constraint';
 import { IsWhatsappAlreadyInUse } from '../validations/users.whatsapp-constraint';
 import { getUniqueErrorMessage } from '../../constants/error';
@@ -7,7 +7,8 @@ export class CreateUserDto {
   @IsNotEmpty()
   name: string;
 
-  socialName: string;
+  @IsOptional()
+  socialName?: string;
 
   @IsNotEmpty()
   @IsDocAlreadyInUse({ message: getUniqueErrorMessage('doc') })

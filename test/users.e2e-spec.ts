@@ -20,6 +20,16 @@ const admUser = {
   password: '$2b$10$JboS87RX73SBXCAYc7zvweMJu0fNsrljwQopxD2DuXrDZZOKowrwu',
 };
 
+const userUser = {
+  id: 10001,
+  role: UserRole.USER,
+  name: 'Bartolomeu de Sousa',
+  socialName: 'Pompeu',
+  doc: 's3s3s3s3',
+  whatsapp: '11988888888',
+  password: '$2b$10$JboS87RX73SBXCAYc7zvweMJu0fNsrljwQopxD2DuXrDZZOKowrwu',
+};
+
 const validUsers = [
   {
     name: 'Felipe',
@@ -54,7 +64,9 @@ describe('Users (e2e)', () => {
     //Create and config as app module
     app = moduleFixture.createNestApplication();
     useContainer(app.select(UsersModule), { fallbackOnErrors: true });
-    app.useGlobalPipes(new ValidationPipe());
+    app.useGlobalPipes(
+      new ValidationPipe({ forbidNonWhitelisted: true, whitelist: true }),
+    );
     await app.init();
 
     //Prepare the repository
@@ -62,7 +74,7 @@ describe('Users (e2e)', () => {
     repository = connection.getRepository(User);
     repository.clear();
     repository.insert(admUser);
-    repository.insert(validUsers[0]);
+    repository.insert(userUser);
 
     //Get tokens
     const admLoginResponse = await request(app.getHttpServer())
@@ -73,8 +85,8 @@ describe('Users (e2e)', () => {
     const userLoginResponse = await request(app.getHttpServer())
       .post('/auth/login')
       .send({
-        whatsapp: validUsers[0].whatsapp,
-        password: validUsers[0].password,
+        whatsapp: userUser.whatsapp,
+        password: userUser.password,
       });
     userToken = userLoginResponse.body.access_token;
   });
@@ -84,9 +96,8 @@ describe('Users (e2e)', () => {
     app.close();
   });
 
-  describe.skip('when try create user', () => {
+  describe('when try create user', () => {
     it('should create user', async () => {
-      addNewValidUser();
       const { body, status } = await request(app.getHttpServer())
         .post(MAIN_ROUTE)
         .send(validUsers[validUserIndex]);
@@ -139,8 +150,8 @@ describe('Users (e2e)', () => {
     });
   });
 
-  describe('when try find all users', () => {
-    it('should find all users if user is adm', async () => {
+  describe('when try find users', () => {
+    it('should find users if user is adm', async () => {
       const { body, status } = await request(app.getHttpServer())
         .get(MAIN_ROUTE)
         .set('authorization', `bearer ${admToken}`);
@@ -149,37 +160,62 @@ describe('Users (e2e)', () => {
       expect(body.length).toBeGreaterThan(0);
     });
 
-    it('shouldnot find all users if user is not adm', async () => {
+    it('should find users using filter', async () => {
+      const { body, status } = await request(app.getHttpServer())
+        .get(`${MAIN_ROUTE}?socialName=${admUser.socialName}`)
+        .set('authorization', `bearer ${admToken}`);
+
+      expect(status).toBe(200);
+      expect(body.length).toBe(1);
+    });
+
+    it('should find user by more than one filter if user is adm', async () => {
+      const { body, status } = await request(app.getHttpServer())
+        .get(
+          `${MAIN_ROUTE}?name=${validUsers[0].name}&doc=${validUsers[0].doc}&whatsapp=${validUsers[0].whatsapp}`,
+        )
+        .set('authorization', `bearer ${admToken}`);
+
+      expect(status).toBe(200);
+      expect(body.length).toBe(1);
+    });
+
+    it('should not find users if user is not adm', async () => {
       const { status } = await request(app.getHttpServer())
         .get(MAIN_ROUTE)
         .set('authorization', `bearer ${userToken}`);
 
       expect(status).toBe(403);
     });
+
+    it('should not find user by filter if filter not exists', async () => {
+      const fakeFilter = 'fakeFilter';
+      const { body, status } = await request(app.getHttpServer())
+        .get(`${MAIN_ROUTE}?${fakeFilter}=Orochi`)
+        .set('authorization', `bearer ${admToken}`);
+
+      expect(status).toBe(400);
+      expect(body.message[0]).toBe(`property ${fakeFilter} should not exist`);
+    });
   });
 
-  describe('when try find user', () => {});
-  describe('when try update user', () => {});
+  describe('when try update user', () => {
+    it('should update user if user is adm or owner with one field', async () => {});
+    it('should update user if user is adm or owner with all fields', async () => {});
+    it('should update user role if user is adm', async () => {});
+
+    it('should not update if user is not logged', async () => {});
+    it('should not update user if user not exists', async () => {});
+    it('should not update user if user not send parameters to update', async () => {});
+    it('should not update user if user send parameters not existis', async () => {});
+    it('should not update user if user is not adm or owner', async () => {});
+    it('should not update user role if user is not adm', async () => {});
+  });
   describe('when try remove user', () => {});
 
-  //should find user by filter if user is adm
-  //should find user by more then one filter if user is adm
-  //should't find user by filter if not exists filter
-  //should't find user by filter if filter not exists
-  //shouldn't find user by filter if user isn't adm
-
-  //should update user if user is adm or owner with one field
-  //should update user if user is adm or owner with all fields
-  //should't update user if user not exists
-  //should't update user if user not send parameters to update
-  //should't update user if user send parameters not existis
-  //should't update user if user is not adm or owner
-  //should't update user role if user is adm
-  //should't update user role if user is not adm
-
   //should remove user if user is adm or owner
-  //should't remove user if user not exists
-  //should't remove user if user is not adm or owner
-  //should't remove user if user not send parameters to remove
-  //should't remove user if user send parameters not existis
+  //should not remove user if user not exists
+  //should not remove user if user is not adm or owner
+  //should not remove user if user not send parameters to remove
+  //should not remove user if user send parameters not existis
 });
