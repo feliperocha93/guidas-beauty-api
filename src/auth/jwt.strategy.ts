@@ -15,6 +15,6 @@ export class JwtStrategy extends PassportStrategy(Strategy) {
 
   async validate(payload: any) {
     //TODO: Create a interface to payload
-    return { userId: payload.sub, whatsapp: payload.whatsapp };
+    return { id: payload.id, role: payload.role, whatsapp: payload.whatsapp };
   }
 }

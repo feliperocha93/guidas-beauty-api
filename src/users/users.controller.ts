@@ -7,6 +7,9 @@ import {
   Param,
   Delete,
   UseGuards,
+  Query,
+  Req,
+  HttpCode,
 } from '@nestjs/common';
 import { UsersService } from './users.service';
 import { CreateUserDto } from './dto/create-user.dto';
@@ -14,6 +17,8 @@ import { UpdateUserDto } from './dto/update-user.dto';
 import { Roles } from '../auth/roles.decorator';
 import { RolesGuard } from '../auth/roles.guard';
 import { UserRole } from './entities/user.entity';
+import { FindUserInterface } from './interfaces/find-user.interface';
+import { JwtAuthGuard } from '../auth/jwt-auth.guard';
 
 @Controller('users')
 export class UsersController {
@@ -27,18 +32,19 @@ export class UsersController {
   @Get()
   @UseGuards(RolesGuard)
   @Roles(UserRole.ADMIN)
-  findAll() {
-    return this.usersService.findAll();
-  }
-
-  @Get(':id')
-  findOne(@Param('id') id: string) {
-    return this.usersService.findOne(+id);
+  find(@Query() query: FindUserInterface) {
+    return this.usersService.find({ ...query });
   }
 
   @Patch(':id')
-  update(@Param('id') id: string, @Body() updateUserDto: UpdateUserDto) {
-    return this.usersService.update(+id, updateUserDto);
+  @HttpCode(204)
+  @UseGuards(JwtAuthGuard)
+  update(
+    @Req() req,
+    @Param('id') id: string,
+    @Body() updateUserDto: UpdateUserDto,
+  ) {
+    return this.usersService.update(req.user, +id, updateUserDto);
   }
 
   @Delete(':id')

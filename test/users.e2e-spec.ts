@@ -200,22 +200,144 @@ describe('Users (e2e)', () => {
   });
 
   describe('when try update user', () => {
-    it('should update user if user is adm or owner with one field', async () => {});
-    it('should update user if user is adm or owner with all fields', async () => {});
-    it('should update user role if user is adm', async () => {});
+    it('should update user if user is adm (one field)', async () => {
+      const newName = 'Dona Odete';
+      const { status } = await request(app.getHttpServer())
+        .patch(`${MAIN_ROUTE}/${userUser.id}`)
+        .send({ name: newName })
+        .set('authorization', `bearer ${admToken}`);
 
-    it('should not update if user is not logged', async () => {});
-    it('should not update user if user not exists', async () => {});
-    it('should not update user if user not send parameters to update', async () => {});
-    it('should not update user if user send parameters not existis', async () => {});
-    it('should not update user if user is not adm or owner', async () => {});
-    it('should not update user role if user is not adm', async () => {});
+      console.log(admToken);
+
+      const updatedUser = await repository.findOne({ id: userUser.id });
+
+      expect(status).toBe(204);
+      expect(updatedUser.name).toBe(newName);
+    });
+
+    it('should update user if user is owner (all fields)', async () => {
+      const newFields = {
+        name: 'Felipe Rocha',
+        socialName: 'Tetão',
+        doc: '436540794',
+        whatsapp: '1139074461',
+      };
+      const { status } = await request(app.getHttpServer())
+        .patch(`${MAIN_ROUTE}/${userUser.id}`)
+        .send({ ...newFields })
+        .set('authorization', `bearer ${userToken}`);
+
+      const updatedUser = await repository.findOne({ id: userUser.id });
+
+      expect(status).toBe(204);
+      expect(updatedUser.name).toBe(newFields.name);
+      expect(updatedUser.socialName).toBe(newFields.socialName);
+      expect(updatedUser.doc).toBe(newFields.doc);
+      expect(updatedUser.whatsapp).toBe(newFields.whatsapp);
+    });
+
+    it('should not update user role if user is not adm', async () => {
+      const { status } = await request(app.getHttpServer())
+        .patch(`${MAIN_ROUTE}/${userUser.id}`)
+        .send({ role: UserRole.ADMIN })
+        .set('authorization', `bearer ${userToken}`);
+
+      const updatedUser = await repository.findOne({ id: userUser.id });
+
+      expect(status).toBe(403);
+      expect(updatedUser.role).toBe(UserRole.USER);
+    });
+
+    it('should update user role if user is adm', async () => {
+      const { status } = await request(app.getHttpServer())
+        .patch(`${MAIN_ROUTE}/${userUser.id}`)
+        .send({ role: UserRole.ADMIN })
+        .set('authorization', `bearer ${admToken}`);
+
+      const updatedUser = await repository.findOne({ id: userUser.id });
+
+      expect(status).toBe(204);
+      expect(updatedUser.role).toBe(UserRole.ADMIN);
+    });
+
+    it('should not update if user is not logged', async () => {
+      const newName = 'Not Updated';
+      const { status } = await request(app.getHttpServer())
+        .patch(`${MAIN_ROUTE}/${userUser.id}`)
+        .send({ name: newName });
+
+      const updatedUser = await repository.findOne({ id: userUser.id });
+
+      expect(status).toBe(401);
+      expect(updatedUser.name).not.toBe(newName);
+    });
+
+    it('should not update user if user not exists', async () => {
+      const newName = 'Olavo Bilac';
+      const { body, status } = await request(app.getHttpServer())
+        .patch(`${MAIN_ROUTE}/154651165`)
+        .send({ name: newName })
+        .set('authorization', `bearer ${admToken}`);
+
+      expect(status).toBe(404);
+      expect(body.message).toBe('user not found');
+      //TODO: create a exception message file in constants folder
+    });
+
+    it('should not update user if user not send parameters to update', async () => {
+      const { body, status } = await request(app.getHttpServer())
+        .patch(`${MAIN_ROUTE}/${userUser.id}`)
+        .send({})
+        .set('authorization', `bearer ${admToken}`);
+
+      expect(status).toBe(400);
+      expect(body.message).toBe('body request can not be empty');
+    });
+
+    it('should not update user if user send parameters not existis', async () => {
+      const newName = 'Olavo Bilac';
+      const { body, status } = await request(app.getHttpServer())
+        .patch(`${MAIN_ROUTE}/${userUser.id}`)
+        .send({ fakeName: newName })
+        .set('authorization', `bearer ${admToken}`);
+
+      expect(status).toBe(400);
+      expect(body.message[0]).toBe('property fakeName should not exist');
+    });
+
+    it('should not update user if user is not adm or owner', async () => {
+      await request(app.getHttpServer())
+        .patch(`${MAIN_ROUTE}/${userUser.id}`)
+        .send({ role: UserRole.USER })
+        .set('authorization', `bearer ${admToken}`);
+
+      const { body, status } = await request(app.getHttpServer())
+        .patch(`${MAIN_ROUTE}/${userUser.id}`)
+        .send({ role: UserRole.ADMIN })
+        .set('authorization', `bearer ${userToken}`);
+
+      expect(status).toBe(403);
+      expect(body.message).toBe('only admin can update role');
+    });
   });
-  describe('when try remove user', () => {});
 
-  //should remove user if user is adm or owner
-  //should not remove user if user not exists
-  //should not remove user if user is not adm or owner
-  //should not remove user if user not send parameters to remove
-  //should not remove user if user send parameters not existis
+  describe('when try remove user', () => {
+    it('', async () => {
+      const { status } = await request(app.getHttpServer())
+        .patch(`${MAIN_ROUTE}/${userUser.id}`)
+        .send({ role: UserRole.ADMIN })
+        .set('authorization', `bearer ${userToken}`);
+
+      const deletedUser = repository.findOne({ id: userUser.id });
+      console.log(deletedUser);
+
+      expect(status).toBe(204);
+      // expect(deletedUser).toBe(???);
+    });
+    //should remove user if user is adm or owner
+    //should not remove user if user not exists
+    //should not remove user if user is not adm or owner
+    //should not remove user if user not send parameters to remove
+    //should not remove user if user send parameters not existis
+  });
 });
