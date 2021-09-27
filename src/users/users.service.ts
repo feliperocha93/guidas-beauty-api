@@ -73,7 +73,22 @@ export class UsersService {
     return this.userRepository.update(id, updateUserDto);
   }
 
-  remove(id: number) {
+  //TODO: Implements interface as jwt-strategy
+  async remove(user: any, id: number) {
+    const userIsOwner = this.checkOwner(user.id, id);
+    const userIsAdmin = this.checkAdmin(user.role);
+    const userToRemove = await this.findOne({ id });
+    const userToRemoveExists = !!userToRemove;
+
+    //TODO: create a exception message file in constants folder
+    if (!userToRemoveExists) {
+      throw new NotFoundException('user not found');
+    }
+
+    if (!userIsOwner && !userIsAdmin) {
+      throw new ForbiddenException('can not remove this user');
+    }
+
     return this.userRepository.delete(id);
   }
 

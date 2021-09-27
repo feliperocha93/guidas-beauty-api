@@ -207,8 +207,6 @@ describe('Users (e2e)', () => {
         .send({ name: newName })
         .set('authorization', `bearer ${admToken}`);
 
-      console.log(admToken);
-
       const updatedUser = await repository.findOne({ id: userUser.id });
 
       expect(status).toBe(204);
@@ -322,22 +320,46 @@ describe('Users (e2e)', () => {
   });
 
   describe('when try remove user', () => {
-    it('', async () => {
-      const { status } = await request(app.getHttpServer())
-        .patch(`${MAIN_ROUTE}/${userUser.id}`)
-        .send({ role: UserRole.ADMIN })
+    it('should not remove user if user not exists', async () => {
+      const { body, status } = await request(app.getHttpServer())
+        .delete(`${MAIN_ROUTE}/10200840`)
+        .set('authorization', `bearer ${admToken}`);
+
+      expect(status).toBe(404);
+      expect(body.message).toBe('user not found');
+    });
+
+    it('should not remove user if user is not adm or owner', async () => {
+      const { body, status } = await request(app.getHttpServer())
+        .delete(`${MAIN_ROUTE}/${admUser.id}`)
         .set('authorization', `bearer ${userToken}`);
 
-      const deletedUser = repository.findOne({ id: userUser.id });
-      console.log(deletedUser);
+      expect(status).toBe(403);
+      expect(body.message).toBe('can not remove this user');
+    });
+
+    it('should remove user if user is owner', async () => {
+      const { status } = await request(app.getHttpServer())
+        .delete(`${MAIN_ROUTE}/${userUser.id}`)
+        .set('authorization', `bearer ${userToken}`);
+
+      const deletedUser = await repository.findOne({ id: userUser.id });
 
       expect(status).toBe(204);
-      // expect(deletedUser).toBe(???);
+      expect(deletedUser).toBeUndefined();
     });
-    //should remove user if user is adm or owner
-    //should not remove user if user not exists
-    //should not remove user if user is not adm or owner
-    //should not remove user if user not send parameters to remove
-    //should not remove user if user send parameters not existis
+
+    it('should remove user if user is adm', async () => {
+      await repository.insert(userUser);
+
+      const { status } = await request(app.getHttpServer())
+        .delete(`${MAIN_ROUTE}/${userUser.id}`)
+        .set('authorization', `bearer ${admToken}`);
+
+      const deletedUser = await repository.findOne({ id: userUser.id });
+
+      expect(status).toBe(204);
+      expect(deletedUser).toBeUndefined();
+    });
   });
 });
