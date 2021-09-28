@@ -1,8 +1,10 @@
 import { Injectable, CanActivate, ExecutionContext } from '@nestjs/common';
 import { Reflector } from '@nestjs/core';
 import { JwtService } from '@nestjs/jwt';
-import { jwtConstants } from '../constants/auth';
-import { UserRole } from '../users/entities/user.entity';
+import { jwtConstants } from '../constants/auth.constants';
+import { UserRole } from '../enums/user-role.enum';
+import { removeBearer } from '../helpers/string.helper';
+import { UserPayload } from '../interfaces/user-paylod.interface';
 
 @Injectable()
 export class RolesGuard implements CanActivate {
@@ -14,7 +16,6 @@ export class RolesGuard implements CanActivate {
       return true;
     }
 
-    //TODO:To use with dependency injeciton
     const jwtService = new JwtService({
       secret: jwtConstants.secret,
     });
@@ -22,12 +23,9 @@ export class RolesGuard implements CanActivate {
     const request = context.switchToHttp().getRequest();
     const bearerToken = request.headers.authorization;
 
-    //TODO: Create a helper to extrac token
-    const { role } = jwtService.decode(bearerToken.split(' ')[1]) as {
-      id: number;
-      role: UserRole;
-      whatsapp: string;
-    };
+    const { role } = jwtService.decode(
+      removeBearer(bearerToken),
+    ) as UserPayload;
 
     return matchRoles(roles, role);
   }

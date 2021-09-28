@@ -1,8 +1,9 @@
 import { createConnection } from 'typeorm';
+import { DATABASE_PROVIDE } from '../constants/database.constants';
 
 export const databaseProviders = [
   {
-    provide: 'DATABASE_CONNECTION',
+    provide: DATABASE_PROVIDE,
     useFactory: async () =>
       await createConnection({
         type: 'postgres',
@@ -16,4 +17,3 @@ export const databaseProviders = [
       }),
   },
 ];
-//TODO: String at line 5 must be import of a constants file

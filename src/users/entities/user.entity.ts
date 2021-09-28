@@ -1,10 +1,5 @@
 import { Entity, Column, PrimaryGeneratedColumn } from 'typeorm';
-
-export enum UserRole {
-  ADMIN = 'admin',
-  USER = 'user',
-}
-//TODO: Check the best place (file) to keep this enum
+import { UserRole } from '../../enums/user-role.enum';
 
 @Entity()
 export class User {
@@ -15,7 +10,7 @@ export class User {
   name: string;
 
   @Column({ length: 80, nullable: true })
-  socialName: string;
+  socialName?: string;
 
   @Column({ length: 30, unique: true })
   doc: string;

@@ -6,18 +6,29 @@ import {
   BadRequestException,
 } from '@nestjs/common';
 import { Repository } from 'typeorm';
-import { User, UserRole } from './entities/user.entity';
+import { User } from './entities/user.entity';
+import { UserRole } from '../enums/user-role.enum';
 import { CreateUserDto } from './dto/create-user.dto';
 import { UpdateUserDto } from './dto/update-user.dto';
 import { validate } from 'class-validator';
 import { Service } from 'typedi';
 import * as bcrypt from 'bcrypt';
-import { FindUserInterface } from './interfaces/find-user.interface';
+import { FindUserDto } from './dto/find-user.dto';
+import {
+  getForbiddenErrorMessage,
+  getNotEmptyErrorMessage,
+  getNotFoundErrorMessage,
+  getOnlyAdminErrorMessage,
+} from '../constants/error.constants';
+import { BODY_REQUEST, USER_ENTITY } from '../constants/fields.constants';
+import { UserPayload } from '../interfaces/user-paylod.interface';
+import { DELETE, UPDATE } from '../constants/http-verbs.constants';
+import { USER_REPOSITORY } from '../constants/database.constants';
 @Injectable()
 @Service()
 export class UsersService {
   constructor(
-    @Inject('USER_REPOSITORY')
+    @Inject(USER_REPOSITORY)
     private userRepository: Repository<User>,
   ) {}
 
@@ -37,63 +48,64 @@ export class UsersService {
     }
   }
 
-  find(filter: FindUserInterface) {
+  find(filter: FindUserDto) {
     return this.userRepository.find(filter);
   }
 
-  findOne(filter: FindUserInterface = {}) {
+  findOne(filter: FindUserDto = {}) {
     return this.userRepository.findOne(filter);
   }
 
-  //TODO: Implements interface as jwt-strategy
-  async update(user: any, id: number, updateUserDto: UpdateUserDto) {
+  async update(user: UserPayload, id: number, updateUserDto: UpdateUserDto) {
     const updateUserDtoIsEmpty = Object.keys(updateUserDto).length === 0;
     const userIsOwner = this.checkOwner(user.id, id);
     const userIsAdmin = this.checkAdmin(user.role);
     const userToUpdate = await this.findOne({ id });
     const userToUpdateExists = !!userToUpdate;
 
-    //TODO: create a exception message file in constants folder
     if (updateUserDtoIsEmpty) {
-      throw new BadRequestException('body request can not be empty');
+      throw new BadRequestException(getNotEmptyErrorMessage(BODY_REQUEST));
     }
 
     if (!userToUpdateExists) {
-      throw new NotFoundException('user not found');
+      throw new NotFoundException(getNotFoundErrorMessage(USER_ENTITY.NAME));
     }
 
     if (updateUserDto.role !== undefined && !userIsAdmin) {
-      throw new ForbiddenException('only admin can update role');
+      throw new ForbiddenException(
+        getOnlyAdminErrorMessage(UPDATE, USER_ENTITY.ROLE),
+      );
     }
 
     if (!userIsOwner && !userIsAdmin) {
-      throw new ForbiddenException('can not update this user');
+      throw new ForbiddenException(
+        getForbiddenErrorMessage(UPDATE, USER_ENTITY.NAME),
+      );
     }
 
     return this.userRepository.update(id, updateUserDto);
   }
 
-  //TODO: Implements interface as jwt-strategy
-  async remove(user: any, id: number) {
+  async remove(user: UserPayload, id: number) {
     const userIsOwner = this.checkOwner(user.id, id);
     const userIsAdmin = this.checkAdmin(user.role);
     const userToRemove = await this.findOne({ id });
     const userToRemoveExists = !!userToRemove;
 
-    //TODO: create a exception message file in constants folder
     if (!userToRemoveExists) {
-      throw new NotFoundException('user not found');
+      throw new NotFoundException(getNotFoundErrorMessage(USER_ENTITY.NAME));
     }
 
     if (!userIsOwner && !userIsAdmin) {
-      throw new ForbiddenException('can not remove this user');
+      throw new ForbiddenException(
+        getForbiddenErrorMessage(DELETE, USER_ENTITY.NAME),
+      );
     }
 
     return this.userRepository.delete(id);
   }
 
   private checkOwner(userId: number, id: number) {
-    //TODO: Implements interface as jwt-strategy
     return userId === id;
   }
 

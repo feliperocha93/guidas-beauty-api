@@ -1,8 +1,8 @@
 {
-  "name": "hello-horld",
-  "version": "0.0.1",
-  "description": "",
-  "author": "",
+  "name": "guidas-beauty-api",
+  "version": "1.0.0",
+  "description": "This is a personal project to improve my skills in nodejs/nest. It is a api for a software that controls customer service, where they can schedule times and the administratos can have a macro view of the bussiness.",
+  "author": "Felipe Rocha de Lucena",
   "private": true,
   "license": "UNLICENSED",
   "scripts": {
@@ -20,7 +20,6 @@
     "test:debug": "node --inspect-brk -r tsconfig-paths/register -r ts-node/register node_modules/.bin/jest --runInBand",
     "test:e2e": "jest --config ./test/jest-e2e.json --detectOpenHandles",
     "test:e2e:watch": "jest --config ./test/jest-e2e.json --watch",
-    "test:e2e:debug": "node --inspect-brk -r tsconfig-paths/register -r ts-node/register node_modules/.bin/jest --config ./test/jest-e2e.json --runInBand",
     "typeorm": "node --require ts-node/register ./node_modules/typeorm/cli.js",
     "migration:create": "typeorm migration:create -n"
   },

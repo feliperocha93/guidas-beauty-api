@@ -9,14 +9,13 @@ async function bootstrap() {
   useContainer(app.select(AppModule), { fallbackOnErrors: true });
 
   const config = new DocumentBuilder()
-    .setTitle('Cats example')
-    .setDescription('The cats API description')
+    .setTitle(`Guida's Beauty API`)
+    .setDescription(`Official documentation for Guida's Beauty API.`)
     .setVersion('1.0')
-    .addTag('cats')
+    .addBearerAuth()
     .build();
   const document = SwaggerModule.createDocument(app, config);
-  SwaggerModule.setup('api', app, document);
-  //TODO: Configure swagger-gen
+  SwaggerModule.setup('swagger', app, document);
 
   app.useGlobalPipes(
     new ValidationPipe({ forbidNonWhitelisted: true, whitelist: true }),

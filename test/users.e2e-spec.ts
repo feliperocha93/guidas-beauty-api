@@ -4,9 +4,23 @@ import { UsersModule } from '../src/users/users.module';
 import { AppModule } from '../src/app.module';
 import { INestApplication, ValidationPipe } from '@nestjs/common';
 import { useContainer } from 'class-validator';
-import { getUniqueErrorMessage } from '../src/constants/error';
+import {
+  getNotEmptyErrorMessage,
+  getUniqueErrorMessage,
+  getNotFoundErrorMessage,
+  getOnlyAdminErrorMessage,
+  getForbiddenErrorMessage,
+} from '../src/constants/error.constants';
 import { getConnection, Repository, Connection } from 'typeorm';
-import { User, UserRole } from '../src/users/entities/user.entity';
+import { User } from '../src/users/entities/user.entity';
+import { UserRole } from '../src/enums/user-role.enum';
+import { BODY_REQUEST, USER_ENTITY } from '../src/constants/fields.constants';
+import { DELETE, UPDATE } from '../src/constants/http-verbs.constants';
+
+//TODO: Refactor describes to use test template
+//TODO: Can not update doc/whatsapp if exists
+//TODO: When find/update role, to validate if value exists in enum
+//TODO: Add fields length validate
 
 const MAIN_ROUTE = '/users';
 
@@ -278,8 +292,7 @@ describe('Users (e2e)', () => {
         .set('authorization', `bearer ${admToken}`);
 
       expect(status).toBe(404);
-      expect(body.message).toBe('user not found');
-      //TODO: create a exception message file in constants folder
+      expect(body.message).toBe(getNotFoundErrorMessage(USER_ENTITY.NAME));
     });
 
     it('should not update user if user not send parameters to update', async () => {
@@ -289,7 +302,7 @@ describe('Users (e2e)', () => {
         .set('authorization', `bearer ${admToken}`);
 
       expect(status).toBe(400);
-      expect(body.message).toBe('body request can not be empty');
+      expect(body.message).toBe(getNotEmptyErrorMessage(BODY_REQUEST));
     });
 
     it('should not update user if user send parameters not existis', async () => {
@@ -315,7 +328,9 @@ describe('Users (e2e)', () => {
         .set('authorization', `bearer ${userToken}`);
 
       expect(status).toBe(403);
-      expect(body.message).toBe('only admin can update role');
+      expect(body.message).toBe(
+        getOnlyAdminErrorMessage(UPDATE, USER_ENTITY.ROLE),
+      );
     });
   });
 
@@ -326,7 +341,7 @@ describe('Users (e2e)', () => {
         .set('authorization', `bearer ${admToken}`);
 
       expect(status).toBe(404);
-      expect(body.message).toBe('user not found');
+      expect(body.message).toBe(getNotFoundErrorMessage(USER_ENTITY.NAME));
     });
 
     it('should not remove user if user is not adm or owner', async () => {
@@ -335,7 +350,9 @@ describe('Users (e2e)', () => {
         .set('authorization', `bearer ${userToken}`);
 
       expect(status).toBe(403);
-      expect(body.message).toBe('can not remove this user');
+      expect(body.message).toBe(
+        getForbiddenErrorMessage(DELETE, USER_ENTITY.NAME),
+      );
     });
 
     it('should remove user if user is owner', async () => {
