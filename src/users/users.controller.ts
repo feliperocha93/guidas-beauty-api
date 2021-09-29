@@ -38,7 +38,7 @@ import { RequestErrorInterface } from '../interfaces/request-errors.interface';
 @ApiTags('Users Controller')
 @ApiBearerAuth()
 @ApiUnauthorizedResponse({
-  description: 'Unauthenticated',
+  description: 'Unauthorized',
   type: RequestErrorInterface,
 })
 @Controller('users')
@@ -49,7 +49,10 @@ export class UsersController {
   @Post()
   @ApiOperation({
     summary: 'Create new user',
-    description: `Create a new user. By default, the new user role is 'user'. To set user role as 'admin', you can do it using a admin user credentials.`,
+    description: `<h3>Create a new user.</h3>
+    <b>Rules:</b><br>
+    By default, the new user role is 'user'. <br>
+    To set user role as 'admin', you can do it using a admin user credentials.`,
   })
   @ApiCreatedResponse({
     description: 'The record has been successfully created.',
@@ -66,8 +69,11 @@ export class UsersController {
 
   @Get()
   @ApiOperation({
-    summary: 'Find users by filters [ADM]',
-    description: `Find users by filters. It's required at least one filter. Only admin can use this route.`,
+    summary: 'Find users by filters',
+    description: `<h3>Find users by filters.</h3>
+    <b>Rules:</b><br>
+    It's required at least one filter. <br>
+    Only admin can use this route`,
   })
   @ApiOkResponse({
     description: 'The users has been successfully found.',
@@ -91,8 +97,12 @@ export class UsersController {
 
   @Patch(':id')
   @ApiOperation({
-    summary: 'Update user [OWNER/ADM]',
-    description: `Update user by id. It's required at least one param to update. Only admin or user itself can update it. Only admin can update user role.`,
+    summary: 'Update user',
+    description: `<h3>Update user by id.</h3>
+    <b>Rules:</b><br>
+    It's required at least one param to update. <br>
+    Only admin can update user role. <br>
+    Only admin or user itself can update it.`,
   })
   @ApiNoContentResponse({
     description: 'The record has been successfully updated.',
@@ -122,8 +132,10 @@ export class UsersController {
 
   @Delete(':id')
   @ApiOperation({
-    summary: 'Delete user [OWNER/ADM]',
-    description: `Delete user. Only admin or user itself can delete it.`,
+    summary: 'Delete user',
+    description: `<h3>Delete user.</h3>
+    <b>Rules:</b><br>
+    Only admin or user itself can delete it.`,
   })
   @ApiNoContentResponse({
     description: 'The record has been successfully deleted.',
