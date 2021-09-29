@@ -6,29 +6,29 @@ import { ApiProperty, ApiPropertyOptional } from '@nestjs/swagger';
 
 export class CreateUserDto {
   @ApiProperty()
-  @IsNotEmpty()
   @IsString()
+  @IsNotEmpty()
   name: string;
 
   @ApiPropertyOptional()
-  @IsOptional()
   @IsString()
+  @IsOptional()
   socialName?: string;
 
   @ApiProperty()
-  @IsNotEmpty()
   @IsString()
+  @IsNotEmpty()
   @IsDocAlreadyInUse({ message: getUniqueErrorMessage('doc') })
   doc: string;
 
   @ApiProperty()
-  @IsNotEmpty()
   @IsString()
+  @IsNotEmpty()
   @IsWhatsappAlreadyInUse({ message: getUniqueErrorMessage('whatsapp') })
   whatsapp: string;
 
   @ApiProperty()
-  @IsNotEmpty()
   @IsString()
+  @IsNotEmpty()
   password: string;
 }

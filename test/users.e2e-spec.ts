@@ -18,9 +18,8 @@ import { BODY_REQUEST, USER_ENTITY } from '../src/constants/fields.constants';
 import { DELETE, UPDATE } from '../src/constants/http-verbs.constants';
 
 //TODO: Refactor describes to use test template
-//TODO: Can not update doc/whatsapp if exists
-//TODO: When find/update role, to validate if value exists in enum
 //TODO: Add fields length validate
+//TODO: Test unauthenticate error in all of routes (bad way)
 
 const MAIN_ROUTE = '/users';
 
@@ -111,6 +110,7 @@ describe('Users (e2e)', () => {
   });
 
   describe('when try create user', () => {
+    //TODO: should not create if property on body request not exists
     it('should create user', async () => {
       const { body, status } = await request(app.getHttpServer())
         .post(MAIN_ROUTE)
@@ -165,6 +165,7 @@ describe('Users (e2e)', () => {
   });
 
   describe('when try find users', () => {
+    //TODO: When find by role, to validate if value exists in enum
     it('should find users if user is adm', async () => {
       const { body, status } = await request(app.getHttpServer())
         .get(MAIN_ROUTE)
@@ -214,6 +215,8 @@ describe('Users (e2e)', () => {
   });
 
   describe('when try update user', () => {
+    //TODO: Can not update doc/whatsapp if exists
+    //TODO: When update role, to validate if value exists in enum
     it('should update user if user is adm (one field)', async () => {
       const newName = 'Dona Odete';
       const { status } = await request(app.getHttpServer())
