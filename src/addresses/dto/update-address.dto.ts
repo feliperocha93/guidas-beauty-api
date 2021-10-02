@@ -1,19 +1,4 @@
-import { IsNotEmpty, IsOptional, IsString } from 'class-validator';
+import { PartialType } from '@nestjs/swagger';
+import { CreateUserDto } from '../../users/dto/create-user.dto';
 
-export class UpdateAddressDto {
-  @IsString()
-  @IsOptional()
-  description?: string;
-
-  @IsString()
-  @IsNotEmpty()
-  state?: string;
-
-  @IsString()
-  @IsNotEmpty()
-  city?: string;
-
-  @IsString()
-  @IsNotEmpty()
-  cep?: string;
-}
+export class UpdateAddressDto extends PartialType(CreateUserDto) {}
