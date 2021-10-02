@@ -16,36 +16,17 @@ import { User } from '../src/users/entities/user.entity';
 import { UserRole } from '../src/enums/user-role.enum';
 import { BODY_REQUEST, USER_ENTITY } from '../src/constants/fields.constants';
 import { DELETE, UPDATE } from '../src/constants/http-verbs.constants';
-import { admUser, userUser } from './config/test-users';
+import { admUser, getAdmToken, getUserToken, userUser } from './data/user.data';
 import { ROUTES } from '../src/constants/routes.constants';
+import { CreateUserDto } from '../src/users/dto/create-user.dto';
 
 //TODO: Refactor describes to use test template
 //TODO: Add fields length validate
 //TODO: Test unauthenticate error in all of routes (bad way)
 
-const MAIN_ROUTE = ROUTES.USERS;
+const MAIN_ROUTE = `/${ROUTES.USERS}`;
 
-// const admUser = {
-//   id: 10000,
-//   role: UserRole.ADMIN,
-//   name: 'Margarida Lucena',
-//   socialName: 'Guida',
-//   doc: 's2s2s2s2',
-//   whatsapp: '11999999999',
-//   password: '$2b$10$JboS87RX73SBXCAYc7zvweMJu0fNsrljwQopxD2DuXrDZZOKowrwu',
-// };
-
-// const userUser = {
-//   id: 10001,
-//   role: UserRole.USER,
-//   name: 'Bartolomeu de Sousa',
-//   socialName: 'Pompeu',
-//   doc: 's3s3s3s3',
-//   whatsapp: '11988888888',
-//   password: '$2b$10$JboS87RX73SBXCAYc7zvweMJu0fNsrljwQopxD2DuXrDZZOKowrwu',
-// };
-
-const validUsers = [
+const validUsers: Array<CreateUserDto> = [
   {
     name: 'Felipe',
     socialName: 'Rocha',
@@ -92,18 +73,8 @@ describe('Users (e2e)', () => {
     repository.insert(userUser);
 
     //Get tokens
-    const admLoginResponse = await request(app.getHttpServer())
-      .post('/auth/login')
-      .send({ whatsapp: admUser.whatsapp, password: admUser.password });
-    admToken = admLoginResponse.body.access_token;
-
-    const userLoginResponse = await request(app.getHttpServer())
-      .post('/auth/login')
-      .send({
-        whatsapp: userUser.whatsapp,
-        password: userUser.password,
-      });
-    userToken = userLoginResponse.body.access_token;
+    admToken = await getAdmToken(app);
+    userToken = await getUserToken(app);
   });
 
   afterAll(() => {

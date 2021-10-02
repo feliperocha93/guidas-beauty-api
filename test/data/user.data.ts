@@ -1,8 +1,9 @@
 import { INestApplication } from '@nestjs/common';
 import * as request from 'supertest';
 import { UserRole } from '../../src/enums/user-role.enum';
+import { User } from '../../src/users/entities/user.entity';
 
-export const admUser = {
+export const admUser: User = {
   id: 10000,
   role: UserRole.ADMIN,
   name: 'Margarida Lucena',
@@ -12,7 +13,7 @@ export const admUser = {
   password: '$2b$10$JboS87RX73SBXCAYc7zvweMJu0fNsrljwQopxD2DuXrDZZOKowrwu',
 };
 
-export const userUser = {
+export const userUser: User = {
   id: 10001,
   role: UserRole.USER,
   name: 'Bartolomeu de Sousa',
