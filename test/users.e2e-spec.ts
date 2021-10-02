@@ -16,32 +16,34 @@ import { User } from '../src/users/entities/user.entity';
 import { UserRole } from '../src/enums/user-role.enum';
 import { BODY_REQUEST, USER_ENTITY } from '../src/constants/fields.constants';
 import { DELETE, UPDATE } from '../src/constants/http-verbs.constants';
+import { admUser, userUser } from './config/test-users';
+import { ROUTES } from '../src/constants/routes.constants';
 
 //TODO: Refactor describes to use test template
 //TODO: Add fields length validate
 //TODO: Test unauthenticate error in all of routes (bad way)
 
-const MAIN_ROUTE = '/users';
+const MAIN_ROUTE = ROUTES.USERS;
 
-const admUser = {
-  id: 10000,
-  role: UserRole.ADMIN,
-  name: 'Margarida Lucena',
-  socialName: 'Guida',
-  doc: 's2s2s2s2',
-  whatsapp: '11999999999',
-  password: '$2b$10$JboS87RX73SBXCAYc7zvweMJu0fNsrljwQopxD2DuXrDZZOKowrwu',
-};
+// const admUser = {
+//   id: 10000,
+//   role: UserRole.ADMIN,
+//   name: 'Margarida Lucena',
+//   socialName: 'Guida',
+//   doc: 's2s2s2s2',
+//   whatsapp: '11999999999',
+//   password: '$2b$10$JboS87RX73SBXCAYc7zvweMJu0fNsrljwQopxD2DuXrDZZOKowrwu',
+// };
 
-const userUser = {
-  id: 10001,
-  role: UserRole.USER,
-  name: 'Bartolomeu de Sousa',
-  socialName: 'Pompeu',
-  doc: 's3s3s3s3',
-  whatsapp: '11988888888',
-  password: '$2b$10$JboS87RX73SBXCAYc7zvweMJu0fNsrljwQopxD2DuXrDZZOKowrwu',
-};
+// const userUser = {
+//   id: 10001,
+//   role: UserRole.USER,
+//   name: 'Bartolomeu de Sousa',
+//   socialName: 'Pompeu',
+//   doc: 's3s3s3s3',
+//   whatsapp: '11988888888',
+//   password: '$2b$10$JboS87RX73SBXCAYc7zvweMJu0fNsrljwQopxD2DuXrDZZOKowrwu',
+// };
 
 const validUsers = [
   {

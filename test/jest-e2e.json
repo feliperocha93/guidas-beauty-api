@@ -10,7 +10,7 @@
   "globals": {
     "ts-jest": {
       "astTransformers": {
-        "before": ["./test/class-transformer"]
+        "before": ["./test/config/nestjs-swagger-transformer"]
       }
     }
   }
