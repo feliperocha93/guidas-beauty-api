@@ -5,6 +5,7 @@ import { ADDRESS_REPOSITORY } from '../constants/database.constants';
 import { CreateAddressDto } from './dto/create-address.dto';
 import { UpdateAddressDto } from './dto/update-address.dto';
 import { Address } from './entities/address.entity';
+import { FindAddressesInterface } from './interfaces/find-addresses.interface';
 
 @Injectable()
 @Service()
@@ -22,7 +23,7 @@ export class AddressesService {
     }
   }
 
-  findAll(filter = {}) {
+  find(filter: FindAddressesInterface = {}) {
     return this.addressRepository.find(filter);
   }
 
