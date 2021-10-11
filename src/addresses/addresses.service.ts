@@ -1,7 +1,19 @@
-import { Inject, Injectable } from '@nestjs/common';
+import {
+  BadRequestException,
+  Inject,
+  Injectable,
+  NotFoundException,
+} from '@nestjs/common';
 import { Service } from 'typedi';
 import { Repository } from 'typeorm';
 import { ADDRESS_REPOSITORY } from '../constants/database.constants';
+import {
+  getNotEmptyErrorMessage,
+  getNotFoundErrorMessage,
+  getNullValueErrorMessage,
+} from '../constants/error.constants';
+import { ADDRESS_ENTITY, BODY_REQUEST } from '../constants/fields.constants';
+import { UserPayload } from '../interfaces/user-paylod.interface';
 import { CreateAddressDto } from './dto/create-address.dto';
 import { UpdateAddressDto } from './dto/update-address.dto';
 import { Address } from './entities/address.entity';
@@ -27,12 +39,34 @@ export class AddressesService {
     return this.addressRepository.find(filter);
   }
 
-  findOne(id: number) {
-    return `This action returns a #${id} address`;
+  findOne(filter: FindAddressesInterface = {}) {
+    return this.addressRepository.findOne(filter);
   }
 
-  update(id: number, updateAddressDto: UpdateAddressDto) {
-    return `This action updates a #${id} address`;
+  async update(
+    //TODO: Remove first argument if it not used
+    user: UserPayload,
+    id: number,
+    updateAddressDto: UpdateAddressDto,
+  ) {
+    const payloadIsEmpty = Object.keys(updateAddressDto).length === 0;
+    const payloadHasNullValue = Object.values(updateAddressDto).includes(null);
+    const addressToUpdate = await this.findOne({ id });
+    const addressToUpdateExists = !!addressToUpdate;
+
+    if (payloadIsEmpty) {
+      throw new BadRequestException(getNotEmptyErrorMessage(BODY_REQUEST));
+    }
+
+    if (payloadHasNullValue) {
+      throw new BadRequestException(getNullValueErrorMessage());
+    }
+
+    if (!addressToUpdateExists) {
+      throw new NotFoundException(getNotFoundErrorMessage(ADDRESS_ENTITY.NAME));
+    }
+
+    return this.addressRepository.update(id, updateAddressDto);
   }
 
   remove(id: number) {

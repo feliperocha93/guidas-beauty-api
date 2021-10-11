@@ -17,7 +17,7 @@
         "--detectOpenHandles",
         "--watchAll"
       ],
-      "console": "externalTerminal",
+      "console": "integratedTerminal",
       "port": 9229
     }
   ]

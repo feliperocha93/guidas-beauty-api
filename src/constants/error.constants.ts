@@ -17,3 +17,7 @@ export const getOnlyAdminErrorMessage = (verb: string, field: string) => {
 export const getForbiddenErrorMessage = (verb: string, entity: string) => {
   return `can not ${verb} this ${entity}`;
 };
+
+export const getNullValueErrorMessage = () => {
+  return `null values are not allowed`;
+};

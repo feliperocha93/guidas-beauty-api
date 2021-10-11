@@ -8,6 +8,15 @@ import { ROUTES } from '../src/constants/routes.constants';
 import { configApp, getApp } from './config/test-init';
 import { addressCA, addressSP } from './data/address.data';
 import { Address } from '../src/addresses/entities/address.entity';
+import {
+  getNotEmptyErrorMessage,
+  getNotFoundErrorMessage,
+  getNullValueErrorMessage,
+} from '../src/constants/error.constants';
+import {
+  ADDRESS_ENTITY,
+  BODY_REQUEST,
+} from '../src/constants/fields.constants';
 
 const MAIN_ROUTE = `/${ROUTES.ADDRESSES}`;
 
@@ -23,14 +32,14 @@ describe('Addresses (e2e)', () => {
    * @description
    *  Each one insert will add two addresses in repository (addressSP and addressCA)
    */
-  const configRepository = (
+  const configRepository = async (
     repository: Repository<Address>,
     insertsNumber: number,
-  ): void => {
+  ): Promise<void> => {
     repository.clear();
     for (let i = 0; i < insertsNumber; i++) {
-      repository.insert(addressSP);
-      repository.insert(addressCA);
+      await repository.insert(addressSP);
+      await repository.insert(addressCA);
     }
   };
 
@@ -148,8 +157,8 @@ describe('Addresses (e2e)', () => {
   describe('when try find address', () => {
     const TOTAL_ADDRESSES = 3;
     const FIND_ADDRESSES_FIELDS = Object.getOwnPropertyNames(addressSP);
-    beforeAll(() => {
-      configRepository(addressRepository, TOTAL_ADDRESSES);
+    beforeAll(async () => {
+      await configRepository(addressRepository, TOTAL_ADDRESSES);
     });
 
     it('should find all without parameters', async () => {
@@ -249,7 +258,165 @@ describe('Addresses (e2e)', () => {
       expect(body.message[0]).toBe(`property ${FAKE_FIELD} should not exist`);
     });
   });
-  // describe('when try update address', () => {});
+
+  describe('when try update address', () => {
+    const TOTAL_ADDRESSES = 1;
+    const UPDATE_ADDRESSES_FIELDS = Object.getOwnPropertyNames(addressSP);
+    let ADDRESS_SP_ID: number;
+
+    beforeAll(async () => {
+      await configRepository(addressRepository, TOTAL_ADDRESSES);
+      ADDRESS_SP_ID = (addressSP as Address).id;
+    });
+
+    it.each(UPDATE_ADDRESSES_FIELDS)(
+      'should update %s if user is adm',
+      async (field: string) => {
+        const { status } = await request(app.getHttpServer())
+          .patch(`${MAIN_ROUTE}/${ADDRESS_SP_ID}`)
+          .send({ [field]: `${field} successfully updated` })
+          .set('authorization', `bearer ${admToken}`);
+
+        const addressUpdated = await addressRepository.findOne({
+          id: ADDRESS_SP_ID,
+        });
+
+        expect(status).toBe(204);
+        expect(addressUpdated[field]).toBe(`${field} successfully updated`);
+      },
+    );
+
+    it.each([
+      UPDATE_ADDRESSES_FIELDS.slice(0, 2),
+      UPDATE_ADDRESSES_FIELDS.slice(-2),
+    ])(
+      'should update %s and %s if user is adm',
+      async (fieldOne: string, fieldTwo: string) => {
+        const { status } = await request(app.getHttpServer())
+          .patch(`${MAIN_ROUTE}/${ADDRESS_SP_ID}`)
+          .send({
+            [fieldOne]: `${fieldOne} successfully updated with more one`,
+            [fieldTwo]: `${fieldTwo} successfully updated with more one`,
+          })
+          .set('authorization', `bearer ${admToken}`);
+
+        const addressUpdated = await addressRepository.findOne({
+          id: ADDRESS_SP_ID,
+        });
+
+        expect(status).toBe(204);
+        expect(addressUpdated[fieldOne]).toBe(
+          `${fieldOne} successfully updated with more one`,
+        );
+        expect(addressUpdated[fieldTwo]).toBe(
+          `${fieldTwo} successfully updated with more one`,
+        );
+      },
+    );
+
+    it('should update all fields if user is adm', async () => {
+      const address = {
+        ...addressSP,
+      } as Address;
+
+      delete address.id;
+      const { status } = await request(app.getHttpServer())
+        .patch(`${MAIN_ROUTE}/${ADDRESS_SP_ID}`)
+        .send(address)
+        .set('authorization', `bearer ${admToken}`);
+
+      const addressUpdated = await addressRepository.findOne({
+        id: ADDRESS_SP_ID,
+      });
+
+      expect(status).toBe(204);
+      expect(addressUpdated.cep).toBe(addressSP.cep);
+      expect(addressUpdated.city).toBe(addressSP.city);
+      expect(addressUpdated.description).toBe(addressSP.description);
+      expect(addressUpdated.state).toBe(addressSP.state);
+    });
+
+    it('should not update if user is not adm', async () => {
+      const { body, status } = await request(app.getHttpServer())
+        .patch(`${MAIN_ROUTE}/${ADDRESS_SP_ID}`)
+        .send({ cep: '00000-000' })
+        .set('authorization', `bearer ${userToken}`);
+
+      expect(status).toBe(403);
+      expect(body.message).toBe('Forbidden resource');
+    });
+
+    it('should not update if user is not logged', async () => {
+      const { body, status } = await request(app.getHttpServer())
+        .patch(`${MAIN_ROUTE}/${ADDRESS_SP_ID}`)
+        .send({ cep: '00000-000' });
+
+      expect(status).toBe(401);
+      expect(body.message).toBe('Unauthorized');
+    });
+
+    it('should return exception if address not exist', async () => {
+      const { body, status } = await request(app.getHttpServer())
+        .patch(`${MAIN_ROUTE}/${ADDRESS_SP_ID}300`)
+        .send({ cep: '00000-000' })
+        .set('authorization', `bearer ${admToken}`);
+
+      expect(status).toBe(404);
+      expect(body.message).toBe(getNotFoundErrorMessage(ADDRESS_ENTITY.NAME));
+    });
+
+    it('should return exception if payload is empty', async () => {
+      const { body, status } = await request(app.getHttpServer())
+        .patch(`${MAIN_ROUTE}/${ADDRESS_SP_ID}`)
+        .send({})
+        .set('authorization', `bearer ${admToken}`);
+
+      expect(status).toBe(400);
+      expect(body.message).toBe(getNotEmptyErrorMessage(BODY_REQUEST));
+    });
+
+    it('should return exception if not exist field', async () => {
+      const fakeField = 'fakeField';
+      const { body, status } = await request(app.getHttpServer())
+        .patch(`${MAIN_ROUTE}/${ADDRESS_SP_ID}`)
+        .send({ [fakeField]: 'fake value' })
+        .set('authorization', `bearer ${admToken}`);
+
+      expect(status).toBe(400);
+      expect(body.message[0]).toBe(`property ${fakeField} should not exist`);
+    });
+
+    it('should return exception if field type is invalid', async () => {
+      const { body, status } = await request(app.getHttpServer())
+        .patch(`${MAIN_ROUTE}/${ADDRESS_SP_ID}`)
+        .send({ cep: true })
+        .set('authorization', `bearer ${admToken}`);
+
+      expect(status).toBe(400);
+      expect(body.message[0]).toBe('cep must be a string');
+    });
+
+    it('should return exception if field is empty', async () => {
+      const { body, status } = await request(app.getHttpServer())
+        .patch(`${MAIN_ROUTE}/${ADDRESS_SP_ID}`)
+        .send({ cep: '' })
+        .set('authorization', `bearer ${admToken}`);
+
+      expect(status).toBe(400);
+      expect(body.message[0]).toBe('cep should not be empty');
+    });
+
+    it('should return exception if field is null', async () => {
+      const { body, status } = await request(app.getHttpServer())
+        .patch(`${MAIN_ROUTE}/${ADDRESS_SP_ID}`)
+        .send({ cep: null })
+        .set('authorization', `bearer ${admToken}`);
+
+      expect(status).toBe(400);
+      expect(body.message).toBe(getNullValueErrorMessage());
+    });
+  });
+
   // describe('when try remove address', () => {});
   // describe('when try get lists', () => {});
 });

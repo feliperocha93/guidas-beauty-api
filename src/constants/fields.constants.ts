@@ -4,3 +4,7 @@ export const USER_ENTITY = {
   NAME: 'user',
   ROLE: 'role',
 };
+
+export const ADDRESS_ENTITY = {
+  NAME: 'address',
+};

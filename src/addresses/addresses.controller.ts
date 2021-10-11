@@ -8,6 +8,9 @@ import {
   Delete,
   UseGuards,
   Query,
+  HttpStatus,
+  HttpCode,
+  Req,
 } from '@nestjs/common';
 import {
   ApiBadRequestResponse,
@@ -88,9 +91,17 @@ export class AddressesController {
     return this.addressesService.find(q);
   }
 
+  @UseGuards(RolesGuard)
+  @Roles(UserRole.ADMIN)
   @Patch(':id')
-  update(@Param('id') id: string, @Body() updateAddressDto: UpdateAddressDto) {
-    return this.addressesService.update(+id, updateAddressDto);
+  @HttpCode(HttpStatus.NO_CONTENT)
+  @UseGuards(JwtAuthGuard)
+  update(
+    @Req() req,
+    @Param('id') id: string,
+    @Body() updateAddressDto: UpdateAddressDto,
+  ) {
+    return this.addressesService.update(req.user, +id, updateAddressDto);
   }
 
   @Delete(':id')
