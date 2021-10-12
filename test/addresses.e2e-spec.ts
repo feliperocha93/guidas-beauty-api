@@ -417,7 +417,7 @@ describe('Addresses (e2e)', () => {
     });
   });
 
-  describe.only('when try remove address', () => {
+  describe('when try remove address', () => {
     const TOTAL_ADDRESSES = 1;
     let ADDRESS_SP_ID: number;
 
@@ -490,5 +490,35 @@ describe('Addresses (e2e)', () => {
       expect(addressDeleted).toBeUndefined();
     });
   });
-  // describe('when try get lists', () => {});
+
+  describe.each(['cep', 'state', 'city'])(
+    'when try get %s list',
+    (param: string) => {
+      const TOTAL_ADDRESSES = 1;
+
+      beforeAll(async () => {
+        await configRepository(addressRepository, TOTAL_ADDRESSES);
+      });
+
+      it('should return a list', async () => {
+        const { body, status } = await request(app.getHttpServer())
+          .get(`${MAIN_ROUTE}/${param}`)
+          .set('authorization', `bearer ${userToken}`);
+
+        expect(status).toBe(200);
+        expect(body.length).toBe(2);
+        expect(body.includes(addressSP[param])).toBeTruthy();
+        expect(body.includes(addressCA[param])).toBeTruthy();
+      });
+
+      it('should not return a list if user is not logged', async () => {
+        const { body, status } = await request(app.getHttpServer()).get(
+          `${MAIN_ROUTE}/${param}`,
+        );
+
+        expect(status).toBe(401);
+        expect(body.message).toBe('Unauthorized');
+      });
+    },
+  );
 });

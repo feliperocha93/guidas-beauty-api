@@ -10,7 +10,6 @@ import {
   Query,
   HttpStatus,
   HttpCode,
-  Req,
 } from '@nestjs/common';
 import {
   ApiBadRequestResponse,
@@ -89,8 +88,7 @@ export class AddressesController {
   })
   @UseGuards(JwtAuthGuard)
   find(@Query() query: FindAddressesInterface) {
-    const q = { ...query };
-    return this.addressesService.find(q);
+    return this.addressesService.find({ ...query });
   }
 
   @UseGuards(RolesGuard)
@@ -149,7 +147,45 @@ export class AddressesController {
     return this.addressesService.remove(+id);
   }
 
-  //state list
-  //city list
-  //cep list
+  @Get('/state')
+  @ApiOperation({
+    summary: 'Get list of avaliable states',
+    description: `<h3>Return a list of avaliable states from adressess createds in database</h3>`,
+  })
+  @ApiOkResponse({
+    type: String,
+    isArray: true,
+  })
+  @UseGuards(JwtAuthGuard)
+  getStates() {
+    return this.addressesService.getStates();
+  }
+
+  @Get('/city')
+  @ApiOperation({
+    summary: 'Get list of avaliable cities',
+    description: `<h3>Return a list of avaliable cities from adressess createds in database</h3>`,
+  })
+  @ApiOkResponse({
+    type: String,
+    isArray: true,
+  })
+  @UseGuards(JwtAuthGuard)
+  getCities() {
+    return this.addressesService.getCities();
+  }
+
+  @Get('/cep')
+  @ApiOperation({
+    summary: 'Get list of avaliable ceps',
+    description: `<h3>Return a list of avaliable ceps from adressess createds in database</h3>`,
+  })
+  @ApiOkResponse({
+    type: String,
+    isArray: true,
+  })
+  @UseGuards(JwtAuthGuard)
+  getCeps() {
+    return this.addressesService.getCeps();
+  }
 }

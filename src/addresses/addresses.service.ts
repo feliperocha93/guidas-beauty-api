@@ -73,4 +73,37 @@ export class AddressesService {
 
     return this.addressRepository.delete(id);
   }
+
+  async getStates(): Promise<string[]> {
+    const result = await this.addressRepository
+      .createQueryBuilder('address')
+      .select('address.state')
+      .distinct(true)
+      .orderBy('address.state')
+      .getRawMany();
+
+    return result.map((result) => result.address_state);
+  }
+
+  async getCities(): Promise<string[]> {
+    const result = await this.addressRepository
+      .createQueryBuilder('address')
+      .select('address.city')
+      .distinct(true)
+      .orderBy('address.city')
+      .getRawMany();
+
+    return result.map((result) => result.address_city);
+  }
+
+  async getCeps(): Promise<string[]> {
+    const result = await this.addressRepository
+      .createQueryBuilder('address')
+      .select('address.cep')
+      .distinct(true)
+      .orderBy('address.cep')
+      .getRawMany();
+
+    return result.map((result) => result.address_cep);
+  }
 }
