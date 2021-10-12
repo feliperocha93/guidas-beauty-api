@@ -13,7 +13,6 @@ import {
   getNotNullValuesErrorMessage,
 } from '../constants/error.constants';
 import { ADDRESS_ENTITY, BODY_REQUEST } from '../constants/fields.constants';
-import { UserPayload } from '../interfaces/user-paylod.interface';
 import { CreateAddressDto } from './dto/create-address.dto';
 import { UpdateAddressDto } from './dto/update-address.dto';
 import { Address } from './entities/address.entity';
@@ -64,7 +63,14 @@ export class AddressesService {
     return this.addressRepository.update(id, updateAddressDto);
   }
 
-  remove(id: number) {
-    return `This action removes a #${id} address`;
+  async remove(id: number) {
+    const addressToRemove = await this.findOne({ id });
+    const addressToRemoveExists = !!addressToRemove;
+
+    if (!addressToRemoveExists) {
+      throw new NotFoundException(getNotFoundErrorMessage(ADDRESS_ENTITY.NAME));
+    }
+
+    return this.addressRepository.delete(id);
   }
 }

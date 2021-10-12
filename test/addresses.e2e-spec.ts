@@ -417,6 +417,78 @@ describe('Addresses (e2e)', () => {
     });
   });
 
-  // describe('when try remove address', () => {});
+  describe.only('when try remove address', () => {
+    const TOTAL_ADDRESSES = 1;
+    let ADDRESS_SP_ID: number;
+
+    beforeAll(async () => {
+      await configRepository(addressRepository, TOTAL_ADDRESSES);
+      ADDRESS_SP_ID = (addressSP as Address).id;
+    });
+
+    it('should not remove if user is not logged', async () => {
+      const { body, status } = await request(app.getHttpServer()).delete(
+        `${MAIN_ROUTE}/${ADDRESS_SP_ID}`,
+      );
+
+      const address = await addressRepository.findOne({
+        id: ADDRESS_SP_ID,
+      });
+
+      expect(status).toBe(401);
+      expect(body.message).toBe('Unauthorized');
+      expect(address.cep).toBe(addressSP.cep);
+      expect(address.city).toBe(addressSP.city);
+      expect(address.description).toBe(addressSP.description);
+      expect(address.state).toBe(addressSP.state);
+    });
+
+    it('should not remove if user is not adm', async () => {
+      const { body, status } = await request(app.getHttpServer())
+        .delete(`${MAIN_ROUTE}/${ADDRESS_SP_ID}`)
+        .set('authorization', `bearer ${userToken}`);
+
+      const address = await addressRepository.findOne({
+        id: ADDRESS_SP_ID,
+      });
+
+      expect(status).toBe(403);
+      expect(body.message).toBe('Forbidden resource');
+      expect(address.cep).toBe(addressSP.cep);
+      expect(address.city).toBe(addressSP.city);
+      expect(address.description).toBe(addressSP.description);
+      expect(address.state).toBe(addressSP.state);
+    });
+
+    it('should returns a exception if address not found', async () => {
+      const { body, status } = await request(app.getHttpServer())
+        .delete(`${MAIN_ROUTE}/${ADDRESS_SP_ID}1`)
+        .set('authorization', `bearer ${admToken}`);
+
+      const address = await addressRepository.findOne({
+        id: ADDRESS_SP_ID,
+      });
+
+      expect(status).toBe(404);
+      expect(body.message).toBe(getNotFoundErrorMessage(ADDRESS_ENTITY.NAME));
+      expect(address.cep).toBe(addressSP.cep);
+      expect(address.city).toBe(addressSP.city);
+      expect(address.description).toBe(addressSP.description);
+      expect(address.state).toBe(addressSP.state);
+    });
+
+    it('should remove address if it exist and user is logged and adm', async () => {
+      const { status } = await request(app.getHttpServer())
+        .delete(`${MAIN_ROUTE}/${ADDRESS_SP_ID}`)
+        .set('authorization', `bearer ${admToken}`);
+
+      const addressDeleted = await addressRepository.findOne({
+        id: ADDRESS_SP_ID,
+      });
+
+      expect(status).toBe(204);
+      expect(addressDeleted).toBeUndefined();
+    });
+  });
   // describe('when try get lists', () => {});
 });

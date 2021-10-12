@@ -96,11 +96,15 @@ export class AddressesController {
   @UseGuards(RolesGuard)
   @Roles(UserRole.ADMIN)
   @Patch(':id')
+  @ApiOperation({
+    summary: 'Update address by id',
+    description: `<h3>Update address by id.</h3>`,
+  })
   @ApiNoContentResponse({
     description: 'The record has been successfully updated.',
   })
   @ApiBadRequestResponse({
-    description: `Payload should not be empty <br>  
+    description: `Payload should not be empty <br>
       Field should not be empty. <br>
       Some property not exists <br>
       Field type validation <br>`,
@@ -120,8 +124,10 @@ export class AddressesController {
   update(@Param('id') id: string, @Body() updateAddressDto: UpdateAddressDto) {
     return this.addressesService.update(+id, updateAddressDto);
   }
-
+  @UseGuards(RolesGuard)
+  @Roles(UserRole.ADMIN)
   @Delete(':id')
+  @HttpCode(HttpStatus.NO_CONTENT)
   remove(@Param('id') id: string) {
     return this.addressesService.remove(+id);
   }
