@@ -124,10 +124,27 @@ export class AddressesController {
   update(@Param('id') id: string, @Body() updateAddressDto: UpdateAddressDto) {
     return this.addressesService.update(+id, updateAddressDto);
   }
+
+  @HttpCode(HttpStatus.NO_CONTENT)
   @UseGuards(RolesGuard)
   @Roles(UserRole.ADMIN)
   @Delete(':id')
-  @HttpCode(HttpStatus.NO_CONTENT)
+  @ApiOperation({
+    summary: 'Remove address by id',
+    description: `<h3>Remove address by id.</h3>`,
+  })
+  @ApiNoContentResponse({
+    description: 'The record has been successfully removed.',
+  })
+  @ApiForbiddenResponse({
+    description: `Forbbiden by role <br>
+    Credentials are not administrator's or user's own`,
+    type: RequestErrorInterface,
+  })
+  @ApiNotFoundResponse({
+    description: 'Address not exist',
+    type: RequestErrorInterface,
+  })
   remove(@Param('id') id: string) {
     return this.addressesService.remove(+id);
   }
