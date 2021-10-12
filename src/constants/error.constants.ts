@@ -18,6 +18,6 @@ export const getForbiddenErrorMessage = (verb: string, entity: string) => {
   return `can not ${verb} this ${entity}`;
 };
 
-export const getNullValueErrorMessage = () => {
+export const getNotNullValuesErrorMessage = () => {
   return `null values are not allowed`;
 };

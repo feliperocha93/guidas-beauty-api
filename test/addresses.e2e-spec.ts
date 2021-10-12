@@ -11,7 +11,7 @@ import { Address } from '../src/addresses/entities/address.entity';
 import {
   getNotEmptyErrorMessage,
   getNotFoundErrorMessage,
-  getNullValueErrorMessage,
+  getNotNullValuesErrorMessage,
 } from '../src/constants/error.constants';
 import {
   ADDRESS_ENTITY,
@@ -413,7 +413,7 @@ describe('Addresses (e2e)', () => {
         .set('authorization', `bearer ${admToken}`);
 
       expect(status).toBe(400);
-      expect(body.message).toBe(getNullValueErrorMessage());
+      expect(body.message).toBe(getNotNullValuesErrorMessage());
     });
   });
 

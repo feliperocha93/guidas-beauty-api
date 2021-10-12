@@ -10,7 +10,7 @@ import { ADDRESS_REPOSITORY } from '../constants/database.constants';
 import {
   getNotEmptyErrorMessage,
   getNotFoundErrorMessage,
-  getNullValueErrorMessage,
+  getNotNullValuesErrorMessage,
 } from '../constants/error.constants';
 import { ADDRESS_ENTITY, BODY_REQUEST } from '../constants/fields.constants';
 import { UserPayload } from '../interfaces/user-paylod.interface';
@@ -43,12 +43,7 @@ export class AddressesService {
     return this.addressRepository.findOne(filter);
   }
 
-  async update(
-    //TODO: Remove first argument if it not used
-    user: UserPayload,
-    id: number,
-    updateAddressDto: UpdateAddressDto,
-  ) {
+  async update(id: number, updateAddressDto: UpdateAddressDto) {
     const payloadIsEmpty = Object.keys(updateAddressDto).length === 0;
     const payloadHasNullValue = Object.values(updateAddressDto).includes(null);
     const addressToUpdate = await this.findOne({ id });
@@ -59,7 +54,7 @@ export class AddressesService {
     }
 
     if (payloadHasNullValue) {
-      throw new BadRequestException(getNullValueErrorMessage());
+      throw new BadRequestException(getNotNullValuesErrorMessage());
     }
 
     if (!addressToUpdateExists) {

@@ -21,6 +21,8 @@ import {
   ApiUnauthorizedResponse,
   ApiForbiddenResponse,
   ApiOkResponse,
+  ApiNoContentResponse,
+  ApiNotFoundResponse,
 } from '@nestjs/swagger';
 import { JwtAuthGuard } from '../auth/jwt-auth.guard';
 import { Roles } from '../auth/roles.decorator';
@@ -94,14 +96,29 @@ export class AddressesController {
   @UseGuards(RolesGuard)
   @Roles(UserRole.ADMIN)
   @Patch(':id')
+  @ApiNoContentResponse({
+    description: 'The record has been successfully updated.',
+  })
+  @ApiBadRequestResponse({
+    description: `Payload should not be empty <br>  
+      Field should not be empty. <br>
+      Some property not exists <br>
+      Field type validation <br>`,
+    type: RequestErrorInterface,
+  })
+  @ApiForbiddenResponse({
+    description: `Forbbiden by role <br>
+    Credentials are not administrator's or user's own`,
+    type: RequestErrorInterface,
+  })
+  @ApiNotFoundResponse({
+    description: 'Address not exist',
+    type: RequestErrorInterface,
+  })
   @HttpCode(HttpStatus.NO_CONTENT)
   @UseGuards(JwtAuthGuard)
-  update(
-    @Req() req,
-    @Param('id') id: string,
-    @Body() updateAddressDto: UpdateAddressDto,
-  ) {
-    return this.addressesService.update(req.user, +id, updateAddressDto);
+  update(@Param('id') id: string, @Body() updateAddressDto: UpdateAddressDto) {
+    return this.addressesService.update(+id, updateAddressDto);
   }
 
   @Delete(':id')
